@@ -1,0 +1,124 @@
+# Ignore everything in robocraft/checkpoints
+/robocraft/checkpoints/*
+
+# Ignore everything in simulator/dataset
+/simulator/dataset/*
+
+/robocraft/old_control.py
+/robocraft/old_eval.py
+/robocraft/old_model.py
+/robocraft/old_train.py
+
+# OS-generated files #
+######################
+.DS_Store
+Thumbs.db
+
+# Logs and crash reports #
+###########################
+*.log
+*.stackdump
+
+# Compiled object files #
+##########################
+*.o
+*.out
+*.class
+*.pyc
+*.pyo
+*.pdb
+
+# Temporary files #
+###################
+*.tmp
+*.bak
+*.swp
+*.swo
+*.~*
+
+# IDE specific files #
+#######################
+.vscode/
+.idea/
+*.code-workspace
+
+# Dependency directories #
+###########################
+node_modules/
+vendor/
+.env
+.env.local
+
+# Python #
+##########
+__pycache__/
+*.py[cod]
+*.egg
+*.egg-info/
+
+# Build directories #
+######################
+dist/
+build/
+*.egg-info/
+
+# Java #
+########
+*.war
+*.jar
+
+# Rust #
+########
+target/
+
+# Go #
+######
+bin/
+*.exe
+
+# C/C++ #
+#########
+*.dSYM/
+*.exe
+*.obj
+*.app
+
+# Images and binary files #
+###########################
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.svg
+*.ico
+*.tiff
+*.bmp
+
+# Database files #
+##################
+*.sqlite
+*.db
+
+# Archives #
+############
+*.zip
+*.tar
+*.gz
+*.rar
+*.7z
+
+# Secrets #
+###########
+*.pem
+*.key
+*.crt
+*.cer
+
+# Generated documentation #
+###########################
+*.html
+*.pdf
+
+# AWS credentials #
+###################
+.aws/
