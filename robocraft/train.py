@@ -236,12 +236,13 @@ def main():
     # Hyperparameters
     context_length = 5
     batch_size = 8
-    num_epochs = 50
+    num_epochs = 10
     learning_rate = 1e-4
     image_size = 224
     patch_size = 14
     embed_dim = 384  # DINOv2 embedding dimension
     action_dim = 4  # From your gripper actions
+    dino = False
     
     # Initialize model
     model = ViT(
@@ -254,17 +255,19 @@ def main():
         action_dim=action_dim,
         context_length=context_length,
         channels=3,
-        dropout=0.1
+        dropout=0.1,
+        dino=dino
     )
     
-    # Load and freeze DINO weights
-    dinov2 = torch.hub.load('facebookresearch/dinov2:main', 'dinov2_vits14')
-    model.patch_embed.proj.weight.data = dinov2.patch_embed.proj.weight.data
-    model.patch_embed.proj.bias.data = dinov2.patch_embed.proj.bias.data
-    
-    # Freeze patch embedding
-    for param in model.patch_embed.parameters():
-        param.requires_grad = False
+    if dino:
+        # Load and freeze DINO weights
+        dinov2 = torch.hub.load('facebookresearch/dinov2:main', 'dinov2_vits14')
+        model.patch_embed.proj.weight.data = dinov2.patch_embed.proj.weight.data
+        model.patch_embed.proj.bias.data = dinov2.patch_embed.proj.bias.data
+        
+        # Freeze patch embedding
+        for param in model.patch_embed.parameters():
+            param.requires_grad = False
     
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = model.to(device)

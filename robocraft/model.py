@@ -185,31 +185,33 @@ class Transformer(nn.Module):
         return self.norm(x.view(B, H, N, D))
 
 class ViT(nn.Module):
-    def __init__(self, *, image_size, patch_size, dim, depth, heads, mlp_dim, action_dim, context_length, channels = 3, dim_head = 64, dropout = 0., emb_dropout = 0.):
+    def __init__(self, *, image_size, patch_size, dim, depth, heads, mlp_dim, action_dim, context_length, channels = 3, dim_head = 64, dropout = 0., emb_dropout = 0., dino=True):
         super().__init__()
         image_height, image_width = pair(image_size)
         patch_height, patch_width = pair(patch_size)
 
         assert image_height % patch_height == 0 and image_width % patch_width == 0, 'Image dimensions must be divisible by the patch size.'
 
-        num_patches = (image_height // patch_height) * (image_width // patch_width)
+        self.num_patches = (image_height // patch_height) * (image_width // patch_width)
         patch_dim = channels * patch_height * patch_width
 
         # Try later to test using learned latent encoding space
-        # self.to_patch_embedding = nn.Sequential(
-        #     Rearrange('b c (h p1) (w p2) -> b (h w) (p1 p2 c)', p1 = patch_height, p2 = patch_width),
-        #     nn.LayerNorm(patch_dim),
-        #     nn.Linear(patch_dim, dim),
-        #     nn.LayerNorm(dim),
-        # )
-
-        # DINO_V2 Patch Embedding Encoder
-        self.patch_embed = DINOPatchEmbed(
-            img_size=image_size,
-            patch_size=patch_size,
-            in_chans=channels,
-            embed_dim=dim
-        )
+        
+        if dino:
+            # DINO_V2 Patch Embedding Encoder
+            self.patch_embed = DINOPatchEmbed(
+                img_size=image_size,
+                patch_size=patch_size,
+                in_chans=channels,
+                embed_dim=dim
+            )
+        else:
+            self.patch_embed = nn.Sequential(
+                Rearrange('b c (h p1) (w p2) -> b (h w) (p1 p2 c)', p1 = patch_height, p2 = patch_width),
+                nn.LayerNorm(patch_dim),
+                nn.Linear(patch_dim, dim),
+                nn.LayerNorm(dim),
+            )
 
         # Action encoder
         self.action_encoder = nn.Sequential(
@@ -220,7 +222,7 @@ class ViT(nn.Module):
             nn.LayerNorm(dim)
         )
 
-        self.pos_embedding = nn.Parameter(torch.randn(1, context_length, num_patches, dim))
+        self.pos_embedding = nn.Parameter(torch.randn(1, context_length, self.num_patches, dim))
         self.dropout = nn.Dropout(emb_dropout)
 
         self.transformer = Transformer(dim, depth, heads, dim_head, mlp_dim, dropout, causal=True)
@@ -238,7 +240,7 @@ class ViT(nn.Module):
         state_tokens = torch.stack(state_tokens, dim=1)  # B H N D
 
         action_embeds = self.action_encoder(actions)  # B H D
-        action_embeds = action_embeds.unsqueeze(2).expand(-1, -1, self.patch_embed.num_patches, -1) # B H N D
+        action_embeds = action_embeds.unsqueeze(2).expand(-1, -1, self.num_patches, -1) # B H N D
 
         x = state_tokens + action_embeds
 
